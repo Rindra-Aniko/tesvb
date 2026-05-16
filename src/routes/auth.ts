@@ -46,10 +46,30 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     },
     {
       body: t.Object({
-        name: t.String({ minLength: 1 }),
-        email: t.String({ format: "email" }),
-        password: t.String({ minLength: 6 }),
+        name: t.String({ minLength: 1, default: "Budi" }),
+        email: t.String({ format: "email", default: "budi@example.com" }),
+        password: t.String({ minLength: 6, default: "password123" }),
       }),
+      response: {
+        200: t.Object({
+          message: t.String(),
+          user: t.Object({
+            id: t.Number(),
+            name: t.String(),
+            email: t.String(),
+            role: t.String(),
+            createdAt: t.Any(),
+          }),
+        }),
+        400: t.Object({
+          error: t.String(),
+        }),
+      },
+      detail: {
+        summary: "Register User Baru",
+        tags: ["Auth"],
+        description: "Mendaftarkan user baru ke sistem. Role otomatis menjadi 'user'.",
+      },
     }
   )
   // --- LOGIN ---
@@ -88,12 +108,41 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     },
     {
       body: t.Object({
-        email: t.String({ format: "email" }),
-        password: t.String({ minLength: 6 }),
+        email: t.String({ format: "email", default: "admin@admin.com" }),
+        password: t.String({ minLength: 6, default: "admin123" }),
       }),
+      response: {
+        200: t.Object({
+          message: t.String(),
+          token: t.String(),
+        }),
+        401: t.Object({
+          error: t.String(),
+        }),
+      },
+      detail: {
+        summary: "Login (Dapatkan Token)",
+        tags: ["Auth"],
+        description: "Autentikasi menggunakan email dan password untuk mendapatkan JWT Bearer Token.",
+      },
     }
   )
   // --- LOGOUT ---
-  .post("/logout", () => {
-    return { message: "Logout berhasil. Hapus token di client." };
-  });
+  .post(
+    "/logout",
+    () => {
+      return { message: "Logout berhasil. Hapus token di client." };
+    },
+    {
+      response: {
+        200: t.Object({
+          message: t.String(),
+        }),
+      },
+      detail: {
+        summary: "Logout User",
+        tags: ["Auth"],
+        description: "Menghapus sesi user. Karena menggunakan JWT (stateless), ini hanya mengembalikan pesan konfirmasi.",
+      },
+    }
+  );
