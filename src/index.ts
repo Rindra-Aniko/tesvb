@@ -3,7 +3,7 @@ import { swagger } from "@elysiajs/swagger";
 import { userRoutes } from "./routes";
 import { authRoutes } from "./routes/auth";
 
-const app = new Elysia()
+export const app = new Elysia()
   .use(swagger({
     documentation: {
       info: {
@@ -24,9 +24,12 @@ const app = new Elysia()
   }))
   .get("/", () => "Hello Elysia")
   .use(authRoutes)
-  .use(userRoutes)
-  .listen(3000);
+  .use(userRoutes);
 
-console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
-);
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(3000);
+  console.log(
+    `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
+  );
+}
+
