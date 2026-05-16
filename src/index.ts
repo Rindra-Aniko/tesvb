@@ -1,8 +1,29 @@
 import { Elysia } from "elysia";
+import { swagger } from "@elysiajs/swagger";
 import { userRoutes } from "./routes";
+import { authRoutes } from "./routes/auth";
 
 const app = new Elysia()
+  .use(swagger({
+    documentation: {
+      info: {
+        title: 'User Management API',
+        version: '1.0.0'
+      },
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT'
+          }
+        }
+      },
+      security: [{ bearerAuth: [] }]
+    }
+  }))
   .get("/", () => "Hello Elysia")
+  .use(authRoutes)
   .use(userRoutes)
   .listen(3000);
 

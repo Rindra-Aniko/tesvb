@@ -1,0 +1,44 @@
+### Root
+GET http://localhost:3000/
+
+### 1. Register User Baru
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+    "name": "Budi",
+    "email": "budi@example.com",
+    "password": "password123"
+}
+
+### 2. Login (Dapatkan Token)
+# @name login
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "email": "admin@admin.com",
+    "password": "admin123"
+}
+
+### Ambil token dari response login
+@token = {{login.response.body.token}}
+
+### 3. List Semua User (Butuh Token)
+GET http://localhost:3000/users
+Authorization: Bearer {{token}}
+
+### 4. Tambah User (Hanya Admin)
+POST http://localhost:3000/users
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "password": "securepassword",
+    "role": "user"
+}
+
+### 5. Logout
+POST http://localhost:3000/auth/logout
