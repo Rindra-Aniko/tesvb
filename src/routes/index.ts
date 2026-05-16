@@ -8,19 +8,59 @@ export const userRoutes = new Elysia({ prefix: "/users" })
   // Terapkan middleware auth ke semua route di bawah ini
   .use(authMiddleware)
 
-  // GET /users - Semua user yang login bisa lihat daftar user
-  .get("/", async () => {
-    const result = await db.select().from(users);
-    // Hilangkan password dari response
-    return result.map(({ password, ...user }) => user);
-  })
+  .get(
+    "/",
+    async () => {
+      const result = await db.select().from(users);
+      // Hilangkan password dari response
+      return result.map(({ password, ...user }) => user);
+    },
+    {
+      response: {
+        200: t.Array(
+          t.Object({
+            id: t.Number(),
+            name: t.String(),
+            email: t.String(),
+            role: t.String(),
+            createdAt: t.Any(),
+          })
+        ),
+      },
+      detail: {
+        summary: "List Semua User",
+        tags: ["Users"],
+        description: "Melihat daftar semua user yang terdaftar di sistem.",
+      },
+    }
+  )
 
-  .get("/me", (ctx) => {
-    return {
-      currentUser: (ctx as any).currentUser,
-      headers: ctx.headers,
-    };
-  })
+  .get(
+    "/me",
+    (ctx) => {
+      return {
+        currentUser: (ctx as any).currentUser,
+        headers: ctx.headers,
+      };
+    },
+    {
+      response: {
+        200: t.Object({
+          currentUser: t.Object({
+            id: t.Number(),
+            email: t.String(),
+            role: t.String(),
+          }),
+          headers: t.Any(),
+        }),
+      },
+      detail: {
+        summary: "Info Profil Saya",
+        tags: ["Users"],
+        description: "Mendapatkan informasi user yang sedang login dari token.",
+      },
+    }
+  )
 
   // GET /users/:id - Lihat detail user
   .get(
@@ -41,6 +81,23 @@ export const userRoutes = new Elysia({ prefix: "/users" })
     },
     {
       params: t.Object({ id: t.String() }),
+      response: {
+        200: t.Object({
+          id: t.Number(),
+          name: t.String(),
+          email: t.String(),
+          role: t.String(),
+          createdAt: t.Any(),
+        }),
+        404: t.Object({
+          error: t.String(),
+        }),
+      },
+      detail: {
+        summary: "Detail User Berdasarkan ID",
+        tags: ["Users"],
+        description: "Melihat informasi mendalam dari satu user spesifik.",
+      },
     }
   )
 
@@ -71,11 +128,31 @@ export const userRoutes = new Elysia({ prefix: "/users" })
     },
     {
       body: t.Object({
-        name: t.String({ minLength: 1 }),
-        email: t.String({ format: "email" }),
-        password: t.String({ minLength: 6 }),
-        role: t.Optional(t.String()),
+        name: t.String({ minLength: 1, default: "Jane Doe" }),
+        email: t.String({ format: "email", default: "jane@example.com" }),
+        password: t.String({ minLength: 6, default: "securepassword" }),
+        role: t.Optional(t.String({ default: "user" })),
       }),
+      response: {
+        200: t.Object({
+          message: t.String(),
+          user: t.Object({
+            id: t.Number(),
+            name: t.String(),
+            email: t.String(),
+            role: t.String(),
+            createdAt: t.Any(),
+          }),
+        }),
+        403: t.Object({
+          error: t.String(),
+        }),
+      },
+      detail: {
+        summary: "Tambah User (Admin Only)",
+        tags: ["Users"],
+        description: "Menambahkan user baru ke database secara manual oleh Admin.",
+      },
     }
   )
 
@@ -114,11 +191,34 @@ export const userRoutes = new Elysia({ prefix: "/users" })
     {
       params: t.Object({ id: t.String() }),
       body: t.Object({
-        name: t.Optional(t.String()),
-        email: t.Optional(t.String({ format: "email" })),
+        name: t.Optional(t.String({ default: "Jane Updated" })),
+        email: t.Optional(t.String({ format: "email", default: "jane@example.com" })),
         password: t.Optional(t.String({ minLength: 6 })),
-        role: t.Optional(t.String()),
+        role: t.Optional(t.String({ default: "admin" })),
       }),
+      response: {
+        200: t.Object({
+          message: t.String(),
+          user: t.Object({
+            id: t.Number(),
+            name: t.String(),
+            email: t.String(),
+            role: t.String(),
+            createdAt: t.Any(),
+          }),
+        }),
+        403: t.Object({
+          error: t.String(),
+        }),
+        404: t.Object({
+          error: t.String(),
+        }),
+      },
+      detail: {
+        summary: "Update Data User (Admin Only)",
+        tags: ["Users"],
+        description: "Memperbarui informasi user berdasarkan ID.",
+      },
     }
   )
 
@@ -145,5 +245,21 @@ export const userRoutes = new Elysia({ prefix: "/users" })
     },
     {
       params: t.Object({ id: t.String() }),
+      response: {
+        200: t.Object({
+          message: t.String(),
+        }),
+        403: t.Object({
+          error: t.String(),
+        }),
+        404: t.Object({
+          error: t.String(),
+        }),
+      },
+      detail: {
+        summary: "Hapus User (Admin Only)",
+        tags: ["Users"],
+        description: "Menghapus user secara permanen dari database.",
+      },
     }
   );
